@@ -1,0 +1,83 @@
+class Deck {
+    field Array cards;
+    field int top;
+    field int seed;
+
+    constructor Deck new() {
+        var int i, r, s;
+        let cards = Array.new(52);
+        let top = 0;
+        let seed = 12345;
+
+        let i = 0;
+        let s = 0;
+        while (s < 4) {
+            let r = 1;
+            while (r < 14) {
+                let cards[i] = Card.new(r, s);
+                let i = i + 1;
+                let r = r + 1;
+            }
+            let s = s + 1;
+        }
+
+        do shuffle();
+        return this;
+    }
+
+    method int nextRandom() {
+        let seed = seed + 20251;
+        let seed = seed * 31;
+        if (seed < 0) { let seed = -seed; }
+        return seed;
+    }
+
+    method void shuffle() {
+        var int i, j;
+        var Card temp;
+        let i = 51;
+        while (i > 0) {
+            let j = nextRandom();
+            // mod (i+1)
+            let j = j - ((j / (i + 1)) * (i + 1));
+            if (j < 0) { let j = -j; }
+
+            let temp = cards[i];
+            let cards[i] = cards[j];
+            let cards[j] = temp;
+
+            let i = i - 1;
+        }
+        return;
+    }
+
+    method Card draw() {
+        var Card c;
+        if (top < 52) {
+            let c = cards[top];
+            let top = top + 1;
+            return c;
+        }
+        return null;
+    }
+
+    method void reset() {
+        let top = 0;
+        do shuffle();
+        return;
+    }
+
+    method void dispose() {
+        var int i;
+        var Card c;
+        let i = 0;
+        while (i < 52) {
+            let c = cards[i];
+            do c.dispose();
+            let i = i + 1;
+        }
+        do cards.dispose();
+        do Memory.deAlloc(this);
+        return;
+    }
+}

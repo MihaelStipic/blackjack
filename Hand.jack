@@ -1,0 +1,99 @@
+class Hand {
+    field Array cards;
+    field int count;
+
+    constructor Hand new() {
+        let cards = Array.new(12);
+        let count = 0;
+        return this;
+    }
+
+    method void addCard(Card c) {
+        let cards[count] = c;
+        let count = count + 1;
+        return;
+    }
+
+    method int getCount() { return count; }
+
+    method Card getCard(int i) {
+        return cards[i];
+    }
+
+    method int getScore() {
+        var int score, aces, i;
+        var Card c;
+        let score = 0;
+        let aces = 0;
+        let i = 0;
+
+        while (i < count) {
+            let c = cards[i];
+            let score = score + c.getValue();
+            if (c.getRank() = 1) {
+                let aces = aces + 1;
+            }
+            let i = i + 1;
+        }
+
+        // As moze biti 11 umjesto 1
+        while ((aces > 0) & ((score + 10) < 22)) {
+            let score = score + 10;
+            let aces = aces - 1;
+        }
+
+        return score;
+    }
+
+    method boolean isBust() {
+        return (getScore() > 21);
+    }
+
+    method boolean isBlackjack() {
+        return ((count = 2) & (getScore() = 21));
+    }
+
+    method void print(int startCol, int startRow) {
+        var int i;
+        var Card c;
+        let i = 0;
+        while (i < count) {
+            let c = cards[i];
+            do c.drawCard(startCol + (i * 6), startRow);
+            let i = i + 1;
+        }
+        do Output.moveCursor(startRow + 5, startCol);
+        do Output.printString("Score: ");
+        do Output.printInt(getScore());
+        return;
+    }
+
+    method void printDealerHidden(int startCol, int startRow) {
+        var Card c;
+        let c = cards[0];
+        do c.drawCard(startCol, startRow);
+
+        do Output.moveCursor(startRow, startCol + 6);
+        do Output.printString("+----+");
+        do Output.moveCursor(startRow + 1, startCol + 6);
+        do Output.printString("| ?? |");
+        do Output.moveCursor(startRow + 2, startCol + 6);
+        do Output.printString("|    |");
+        do Output.moveCursor(startRow + 3, startCol + 6);
+        do Output.printString("| ?? |");
+        do Output.moveCursor(startRow + 4, startCol + 6);
+        do Output.printString("+----+");
+        return;
+    }
+
+    method void clear() {
+        let count = 0;
+        return;
+    }
+
+    method void dispose() {
+        do cards.dispose();
+        do Memory.deAlloc(this);
+        return;
+    }
+}

@@ -1,0 +1,62 @@
+class Card {
+    field int rank;  // 1-13 (1=As, 11=J, 12=Q, 13=K)
+    field int suit;  // 0-3
+
+    constructor Card new(int r, int s) {
+        let rank = r;
+        let suit = s;
+        return this;
+    }
+
+    method int getRank() { return rank; }
+    method int getSuit() { return suit; }
+
+    method int getValue() {
+        if (rank > 10) { return 10; }
+        return rank;
+    }
+
+    method void drawCard(int col, int row) {
+        var String rankStr;
+
+        do Output.moveCursor(row, col);
+        do Output.printString("+----+");
+
+        do Output.moveCursor(row + 1, col);
+        do Output.printString("|");
+        if (rank = 1)  { do Output.printString("A   "); }
+        if (rank = 2)  { do Output.printString("2   "); }
+        if (rank = 3)  { do Output.printString("3   "); }
+        if (rank = 4)  { do Output.printString("4   "); }
+        if (rank = 5)  { do Output.printString("5   "); }
+        if (rank = 6)  { do Output.printString("6   "); }
+        if (rank = 7)  { do Output.printString("7   "); }
+        if (rank = 8)  { do Output.printString("8   "); }
+        if (rank = 9)  { do Output.printString("9   "); }
+        if (rank = 10) { do Output.printString("10  "); }
+        if (rank = 11) { do Output.printString("J   "); }
+        if (rank = 12) { do Output.printString("Q   "); }
+        if (rank = 13) { do Output.printString("K   "); }
+        do Output.printString("|");
+
+        do Output.moveCursor(row + 2, col);
+        do Output.printString("|    |");
+
+        do Output.moveCursor(row + 3, col);
+        do Output.printString("|   ");
+        if (suit = 0) { do Output.printString("h"); }
+        if (suit = 1) { do Output.printString("d"); }
+        if (suit = 2) { do Output.printString("c"); }
+        if (suit = 3) { do Output.printString("s"); }
+        do Output.printString("|");
+
+        do Output.moveCursor(row + 4, col);
+        do Output.printString("+----+");
+     return;
+    }
+
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
+}

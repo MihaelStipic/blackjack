@@ -1,0 +1,234 @@
+class Game {
+    field Deck deck;
+    field Hand playerHand;
+    field Hand dealerHand;
+    field int playerMoney;
+    field int bet;
+    field int seed;
+
+    constructor Game new() {
+        let deck = Deck.new();
+        let playerHand = Hand.new();
+        let dealerHand = Hand.new();
+        let playerMoney = 100;
+        let bet = 10;
+        let seed = 0;
+        return this;
+    }
+    method void blink(int row, int col) {
+    	var int i;
+    	let i = 0;
+    	while (i < 3) {
+        	do Output.moveCursor(row, col);
+        	do Output.printString("*** YOU WIN! ***");
+        	do Sys.wait(400);
+        	do Output.moveCursor(row, col);
+        	do Output.printString("                ");
+        	do Sys.wait(400);
+        	let i = i + 1;
+    	}
+    	return;
+    }
+
+    method void run() {
+        var boolean playing;
+        var char key;
+
+        let playing = true;
+
+        while (playing) {
+            if (playerMoney < 1) {
+                do Screen.clearScreen();
+                do Output.moveCursor(10, 18);
+                do Output.printString("YOU ARE BROKE! GAME OVER.");
+                do Sys.wait(3000);
+                let playing = false;
+            } else {
+                do getBet();
+                do playRound();
+
+                do Output.moveCursor(18, 22);
+                do Output.printString("Play again? (Y/N)");
+
+                let key = 0;
+                while ((~(key = 89)) & (~(key = 78))) {
+                    let key = Keyboard.keyPressed();
+                    let seed = seed + 1;
+                }
+                while (~(Keyboard.keyPressed() = 0)) { }
+
+                if (key = 78) { let playing = false; }
+
+                do deck.reset();
+                do playerHand.clear();
+                do dealerHand.clear();
+            }
+        }
+
+        do Screen.clearScreen();
+        do Output.moveCursor(10, 22);
+        do Output.printString("Thanks for playing!");
+        do Output.moveCursor(12, 22);
+        do Output.printString("Final money: $");
+        do Output.printInt(playerMoney);
+        return;
+    }
+
+    method void getBet() {
+        var char key;
+
+        do Screen.clearScreen();
+        do Output.moveCursor(4, 24);
+        do Output.printString("=== BLACKJACK ===");
+        do Output.moveCursor(6, 24);
+        do Output.printString("Money: $");
+        do Output.printInt(playerMoney);
+        do Output.moveCursor(8, 24);
+        do Output.printString("Place your bet:");
+        do Output.moveCursor(10, 24);
+        do Output.printString("1 = $5");
+        do Output.moveCursor(11, 24);
+        do Output.printString("2 = $10");
+        do Output.moveCursor(12, 24);
+        do Output.printString("3 = $25");
+
+        let key = 0;
+        while ((~(key = 49)) & (~(key = 50)) & (~(key = 51))) {
+            let key = Keyboard.keyPressed();
+            let seed = seed + 1;
+        }
+        while (~(Keyboard.keyPressed() = 0)) { }
+
+        if (key = 49) { let bet = 5; }
+        if (key = 50) { let bet = 10; }
+        if (key = 51) { let bet = 25; }
+
+        if (bet > playerMoney) { let bet = playerMoney; }
+
+        return;
+    }
+
+    method void playRound() {
+        var boolean playerTurn;
+        var char key;
+        var int dealerScore;
+
+        do playerHand.addCard(deck.draw());
+        do dealerHand.addCard(deck.draw());
+        do playerHand.addCard(deck.draw());
+        do dealerHand.addCard(deck.draw());
+
+        if (playerHand.isBlackjack()) {
+            do drawTable(true);
+            do Output.moveCursor(15, 22);
+            do Output.printString("BLACKJACK! You win!");
+            let playerMoney = playerMoney + bet + (bet / 2);
+            do Sys.wait(2000);
+            return;
+        }
+
+        let playerTurn = true;
+        while (playerTurn) {
+            do drawTable(false);
+
+            do Output.moveCursor(21, 23);
+            do Output.printString("(H)it or (S)tand?");
+
+            let key = 0;
+            while ((~(key = 72)) & (~(key = 83))) {
+                let key = Keyboard.keyPressed();
+                let seed = seed + 1;
+            }
+            while (~(Keyboard.keyPressed() = 0)) { }
+
+            if (key = 72) {
+                do playerHand.addCard(deck.draw());
+                if (playerHand.isBust()) {
+                    let playerTurn = false;
+                }
+            }
+
+            if (key = 83) {
+                let playerTurn = false;
+            }
+        }
+
+        if (playerHand.isBust()) {
+            do drawTable(true);
+            do Output.moveCursor(15, 22);
+            do Output.printString("BUST! You lose $");
+            do Output.printInt(bet);
+            let playerMoney = playerMoney - bet;
+            do Sys.wait(2000);
+            return;
+        }
+
+        while (dealerHand.getScore() < 17) {
+            do dealerHand.addCard(deck.draw());
+        }
+
+        do drawTable(true);
+
+        do Output.moveCursor(15, 22);
+
+        if (dealerHand.isBust()) {
+            do Output.printString(" Dealer busts! You win $");
+            do Output.printInt(bet);
+            let playerMoney = playerMoney + bet;
+	    do blink(16, 22);  // animacija
+        } else {
+            if (playerHand.getScore() > dealerHand.getScore()) {
+                do Output.printString("You win $");
+                do Output.printInt(bet);
+                let playerMoney = playerMoney + bet;
+		do blink(16, 22);  // animacija
+            } else {
+                if (playerHand.getScore() = dealerHand.getScore()) {
+                    do Output.printString(" Push! Bet returned.");
+                } else {
+                    do Output.printString(" Dealer wins! You lose $");
+                    do Output.printInt(bet);
+                    let playerMoney = playerMoney - bet;
+                }
+            }
+        }
+
+        do Sys.wait(2000);
+        return;
+    }
+
+    method void drawTable(boolean showDealer) {
+        do Screen.clearScreen();
+
+        do Output.moveCursor(0, 24);
+        do Output.printString("=== BLACKJACK ===");
+        do Output.moveCursor(1, 4);
+        do Output.printString("Money: $");
+        do Output.printInt(playerMoney);
+        do Output.moveCursor(1, 50);
+        do Output.printString("Bet: $");
+        do Output.printInt(bet);
+
+        do Output.moveCursor(4, 5);
+        do Output.printString("DEALER:");
+        if (showDealer) {
+            do dealerHand.print(15, 5);
+        } else {
+            do dealerHand.printDealerHidden(15, 5);
+        }
+
+        do Output.moveCursor(9,5);
+        do Output.printString("PLAYER:");
+        do playerHand.print(15, 10);
+
+        return;
+    }
+
+    method void dispose() {
+        do deck.dispose();
+        do playerHand.dispose();
+        do dealerHand.dispose();
+        do Memory.deAlloc(this);
+        return;
+    }
+}
